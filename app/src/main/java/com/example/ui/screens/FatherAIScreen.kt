@@ -44,17 +44,19 @@ fun FatherAIScreen(
         }
     }
 
-    val suggestionQuestions = if (isBangla) {
+    val emergencyActions = if (isBangla) {
         listOf(
-            "আমি নোয়াখালীতে বন্যার ঝুঁকি জানতে চাই",
-            "নিখোঁজ রিপোর্টের সাথে এআই কিভাবে ম্যাচ করে?",
-            "জরুরি সাইক্লোন প্রস্তুতি কি কি?"
+            Pair("৯৯৯ জরুরি সেবা", "জাতীয় জরুরি সেবা ৯৯৯ এর হটলাইন এবং সাহায্য প্রাপ্তির নিয়ম সম্পর্কে বলুন।"),
+            Pair("১০৯০ দুর্যোগ বার্তা", "যোগাযোগের দুর্যোগ প্রস্তুতি এবং ঘূর্ণিঝড়-বন্যা পূর্বাভাস ১০৯০ সেবা সম্পর্কে বলুন।"),
+            Pair("৩৩৩ তথ্য সেবা", "সরকারি তথ্য ও সেবাপ্রাপ্তির হটলাইন ৩৩৩ এর মাধ্যমে কী কী সাহায্য পাওয়া যায়?"),
+            Pair("১০৯৮ শিশু সহায়তা", "শিশু ও নারী সুরক্ষায় বিশেষ হেল্পলাইন ১০৯৮ কিভাবে ব্যবহার করা যায়?")
         )
     } else {
         listOf(
-            "Assess flood risk in Noakhali",
-            "How does AI face recognize missing people?",
-            "Core cyclone preparation tips"
+            Pair("999 Emergency", "Tell me about the National Emergency Hotline 999 services."),
+            Pair("1090 Disaster Info", "Tell me about the Disaster Information Helpline 1090."),
+            Pair("333 Gov Portal", "Describe the government service helpline 333."),
+            Pair("1098 Child Helpline", "Explain how Child Helpline 1098 assists in emergencies.")
         )
     }
 
@@ -86,7 +88,7 @@ fun FatherAIScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.SupportAgent,
-                        contentDescription = "Father AI",
+                        contentDescription = "Surakkha Assistant",
                         tint = GreenPrimary,
                         modifier = Modifier.size(24.dp)
                     )
@@ -94,13 +96,13 @@ fun FatherAIScreen(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
-                        text = if (isBangla) "ফাদার এআই (সেন্ট্রাল অ্যাসিস্ট্যান্ট)" else "Father AI (Central Assistant)",
+                        text = if (isBangla) "সুরক্ষা সহায়ক (জরুরি সাহায্যকারী)" else "Surakkha Assistant (Emergency Guide)",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
                         color = GreenPrimary
                     )
                     Text(
-                        text = if (isBangla) "পরামর্শকারী শুভাকাঙ্ক্ষী সহচর • সচল ও প্রস্তুত" else "Wise Empathetic Assistant • Active to help",
+                        text = if (isBangla) "আপনার সার্বক্ষণিক এআই শুভাকাঙ্ক্ষী সহচর • সচল" else "Your 24/7 Caring AI Companion • Online",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -150,7 +152,7 @@ fun FatherAIScreen(
                             shape = RoundedCornerShape(12.dp)
                         ) {
                             Text(
-                                text = if (isBangla) "ফাদার এআই উত্তর তৈরি করছেন..." else "Father AI is typing protective guide...",
+                                text = if (isBangla) "সুরক্ষা সহায়ক উত্তর তৈরি করছেন..." else "Surakkha Assistant is typing protective guide...",
                                 fontSize = 11.sp,
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -161,22 +163,35 @@ fun FatherAIScreen(
             }
         }
 
-        // Suggestions chips directly on chatbot
-        FlowRow(
+        // Quick action buttons for emergency/safety - Replace suggestion chips
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+                .padding(horizontal = 12.dp, vertical = 6.dp)
         ) {
-            suggestionQuestions.forEach { question ->
-                SuggestionChip(
-                    onClick = { viewModel.sendChatMessage(question) },
-                    label = { Text(question, fontSize = 10.sp) },
-                    colors = SuggestionChipDefaults.suggestionChipColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            Text(
+                text = if (isBangla) "জরুরি সাহায্য হটলাইন ও পরামর্শ" else "Emergency Helplines & Support",
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 6.dp)
+            )
+            
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                emergencyActions.forEach { action ->
+                    SuggestionChip(
+                        onClick = { viewModel.sendChatMessage(action.second) },
+                        label = { Text(action.first, fontSize = 10.sp, fontWeight = FontWeight.Bold) },
+                        colors = SuggestionChipDefaults.suggestionChipColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f),
+                            labelColor = MaterialTheme.colorScheme.error
+                        )
                     )
-                )
+                }
             }
         }
 
@@ -195,7 +210,7 @@ fun FatherAIScreen(
                 OutlinedTextField(
                     value = rawInputText,
                     onValueChange = { rawInputText = it },
-                    placeholder = { Text(if (isBangla) "যেকোনো সাহায্য চেয়ে বাংলায় লিখুন..." else "Ask Father AI any query...") },
+                    placeholder = { Text(if (isBangla) "যেকোনো সাহায্য চেয়ে বাংলায় লিখুন..." else "Ask Surakkha Assistant any query...") },
                     modifier = Modifier
                         .weight(1F)
                         .height(52.dp)

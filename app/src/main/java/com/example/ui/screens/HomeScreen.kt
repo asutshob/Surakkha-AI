@@ -73,21 +73,6 @@ fun HomeScreen(
             QuickActionGrid(isBangla, onNavigate)
         }
 
-        // Suggestion Chips for Chatbot
-        item {
-            Text(
-                text = if (isBangla) "ফাদার এআই পরামর্শ চিপস" else "Father AI Suggestion Chips",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            SuggestionChipsRow(isBangla) { chipText ->
-                viewModel.sendChatMessage(chipText)
-                onNavigate(AppTab.FATHER_AI)
-            }
-        }
-
         // Recent Missing Persons preview
         item {
             Row(
@@ -148,11 +133,13 @@ fun HomeScreen(
 fun HeaderSection(isBangla: Boolean) {
     Column {
         Text(
-            text = if (isBangla) "বাংলাদেশী নাগরিকদের সুরক্ষা কবচ" else "Bangladesh Citizens Protective Shield",
-            style = MaterialTheme.typography.labelMedium,
+            text = if (isBangla) "নিরাপদ বাংলাদেশ গড়ার লক্ষ্যে কৃত্রিম বুদ্ধিমত্তা দিয়ে জীবন রক্ষা করা" else "Saving lives with Artificial Intelligence for a safer Bangladesh",
+            style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
+            lineHeight = 16.sp
         )
+        Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = if (isBangla) "সুরক্ষা এআই (Surakkha AI)" else "Surakkha AI",
             style = MaterialTheme.typography.headlineMedium,

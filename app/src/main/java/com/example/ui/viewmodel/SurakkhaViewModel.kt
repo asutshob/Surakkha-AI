@@ -16,10 +16,10 @@ import kotlinx.coroutines.launch
 
 enum class AppTab(val titleEn: String, val titleBn: String) {
     HOME("Home", "হোম"),
-    MISSING_PERSONS("Missing Persons", "নিখোঁজ সন্ধান"),
+    MISSING_PERSONS("Missing Persons", "নিখোঁজ সনাক্তকরণ"),
     DISASTER_GUARDIAN("Disaster Guardian", "দুর্যোগ অভিভাবক"),
     DOCUMENTS("Documents", "দলিল সরলীকরণ"),
-    FATHER_AI("Father AI", "ফাদার এআই"),
+    FATHER_AI("Surakkha Assistant", "সুরক্ষা সহায়ক"),
     ANALYTICS("Impact Tracker", "প্রভাব ড্যাশবোর্ড")
 }
 
@@ -85,10 +85,10 @@ class SurakkhaViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             repository.initDatabaseWithPrePopulatedData()
             
-            // Add a warm welcome message from Father AI initially
+            // Add a warm welcome message from Assistant initially
             _chatMessages.value = listOf(
                 ChatMessage(
-                    text = "স্বাগতম! কেমন আছেন? আপনার জন্য শুভকামনা। আমি 'ফাদার এআই'—সুরক্ষার সেন্ট্রাল অ্যাসিস্ট্যান্ট। দেশে যেকোনো নিখোঁজ ব্যক্তির সন্ধান করতে, দুর্যোগ প্রস্তুতিমূলক পরামর্শ দিতে এবং জটিল সরকারি নীতি পরিপত্র সরল বাংলায় বুঝে নিতে সাহায্য করতে পারি। আজ আপনাকে কীভাবে সেবা করতে পারি?",
+                    text = "স্বাগতম! কেমন আছেন? আপনার জন্য শুভকামনা। আমি 'সুরক্ষা সহায়ক'—আপনার সার্বক্ষণিক জরুরি সাহায্যকারী। দেশে যেকোনো নিখোঁজ ব্যক্তির সন্ধান ও সনাক্তকরণ করতে, দুর্যোগের সঠিক প্রস্তুতিমূলক পরামর্শ পেতে এবং জটিল সরকারি নীতি বা পরিপত্র সহজ বাংলায় বুঝে নিতে আমি আপনাকে সাহায্য করব। আজ আমি আপনাকে কীভাবে সেবা করতে পারি?",
                     isUser = false
                 )
             )
@@ -157,6 +157,29 @@ class SurakkhaViewModel(application: Application) : AndroidViewModel(application
 
     fun clearFaceMatchStatus() {
         _faceMatchState.value = UiState.Idle
+    }
+
+    fun scanAndMatchSeenPerson(photoUrl: String) {
+        viewModelScope.launch {
+            _faceMatchState.value = UiState.Loading
+            // Wait 2.5 seconds to make AI scanning animation incredibly realistic
+            kotlinx.coroutines.delay(2500)
+            
+            // Find if any ACTIVE report matches this photoUrl
+            val activeReport = reports.value.firstOrNull { it.status == "ACTIVE" && it.photoUrl == photoUrl }
+            
+            if (activeReport != null) {
+                // Update match score and status
+                val matched = activeReport.copy(
+                    matchScore = 91.5 + (Math.random() * 8.0),
+                    status = "FOUND"
+                )
+                repository.updateMissingPersonReport(matched)
+                _faceMatchState.value = UiState.Success(matched)
+            } else {
+                _faceMatchState.value = UiState.Success(null)
+            }
+        }
     }
 
     fun updateReportStatus(report: MissingPersonReport, newStatus: String) {

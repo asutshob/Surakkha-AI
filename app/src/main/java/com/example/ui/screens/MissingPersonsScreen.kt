@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.BorderStroke
 import com.example.data.database.MissingPersonReport
 import com.example.ui.theme.AmberWarning
 import com.example.ui.theme.BluePrimary
@@ -43,6 +44,8 @@ fun MissingPersonsScreen(
 ) {
     var showForm by remember { mutableStateOf(false) }
     var selectedSubTab by remember { mutableStateOf(0) } // 0 = Active Searches, 1 = Found
+    var traceAvatar by remember { mutableStateOf("avatar_boy_1") }
+    val avatars = listOf("avatar_boy_1", "avatar_girl_1", "avatar_elderly_man", "avatar_elderly_woman")
     
     val faceMatchState by viewModel.faceMatchState.collectAsState()
 
@@ -74,6 +77,82 @@ fun MissingPersonsScreen(
                     )
                 }
             }
+
+            // 24/7 AI Image Upload & Face Match Tool
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Text(
+                        text = if (isBangla) "📷 ছবি আপলোড ও ফেস ম্যাচিং করুন" else "📷 Upload Photo & Face Match",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = if (isBangla) 
+                            "রাস্তায় বা কোনো স্থানে কাউকে সন্দেহজনক দেখলে তার ছবি আপলোড করুন। এআই আমাদের সক্রিয় ডাটাবেজের সাথে নিখোঁজ ব্যক্তি সনাক্ত করবে।" 
+                            else "Spotted a suspect or vulnerable person? Check their photo trace here against our live database cases.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    
+                    // Avatar selection representing uploaded photo trace
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = if (isBangla) "ছবি উৎস:" else "Source:",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontWeight = FontWeight.Bold
+                        )
+                        avatars.forEach { av ->
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(if (traceAvatar == av) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else Color.Transparent)
+                                    .border(
+                                        width = if (traceAvatar == av) 3.dp else 1.dp,
+                                        color = if (traceAvatar == av) MaterialTheme.colorScheme.primary else Color.Gray,
+                                        shape = CircleShape
+                                    )
+                                    .clickable { traceAvatar = av },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                AvatarVectorDisplay(photoUrl = av, modifier = Modifier.size(32.dp))
+                            }
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    Button(
+                        onClick = { viewModel.scanAndMatchSeenPerson(traceAvatar) },
+                        modifier = Modifier.fillMaxWidth().height(42.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
+                    ) {
+                        Icon(imageVector = Icons.Default.Face, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = if (isBangla) "ছবি আপলোড করুন ও সন্ধান করুন" else "Upload Trace Photo & Match",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Tabs Bar: Active / Found
             Row(
