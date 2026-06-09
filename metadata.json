@@ -1,0 +1,6 @@
+{
+  "name": "Surakkha AI",
+  "description": "Intelligent all-in-one safety app for Bangladesh focusing on missing persons, disasters, and simplifies gov policies.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
