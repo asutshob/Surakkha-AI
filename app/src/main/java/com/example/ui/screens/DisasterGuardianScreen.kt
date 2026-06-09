@@ -226,7 +226,7 @@ fun DisasterGuardianScreen(
                             CircularProgressIndicator(color = BluePrimary)
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = if (isBangla) "সুরক্ষা সারভার আবহাওয়া উপাত্ত বিশ্লেষণ করছে..." else "Analyzing BMD satellite matrices...",
+                                text = if (isBangla) "সুরক্ষা সিস্টেম আবহাওয়া ডাটা বিশ্লেষণ করছে..." else "Analyzing weather risk profiles...",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

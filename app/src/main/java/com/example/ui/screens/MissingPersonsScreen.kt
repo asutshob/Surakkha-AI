@@ -746,8 +746,8 @@ fun MatchFoundDialog(
                 ) {
                     Text(
                         text = if (isBangla) 
-                            "স্বেচ্ছাসেবী সায়েম কর্তৃক মোহাম্মদপুর আশ্রয়কেন্দ্র সংলগ্ন এলাকা থেকে তার ছবি সার্ভারে আপলোড করা হয়েছিল। স্থানীয় স্বেচ্ছাসেবক ও পুলিশ বাহিনীকে মেসেজ অ্যালার্ট পাঠানো হয়েছে!"
-                            else "Volunteer Sayem uploaded a verification trace matches adjacent to Mohammadpur block. Geo-alarms triggered automatically!",
+                            "স্বেচ্ছাসেবী সায়েম কর্তৃক মোহাম্মদপুর আশ্রয়কেন্দ্র সংলগ্ন এলাকা থেকে তার ছবি সার্ভারে আপলোড করা হয়েছিল। স্থানীয় স্বেচ্ছাসেবক নেটওয়ার্কের নিকট মেসেজ অ্যালার্ট পাঠানো হয়েছে!"
+                            else "Volunteer Sayem uploaded a verification trace matches adjacent to Mohammadpur block. Geo-alarms triggered automatically for volunteers!",
                         style = MaterialTheme.typography.bodySmall,
                         textAlign = TextAlign.Center,
                         lineHeight = 16.sp
@@ -780,7 +780,7 @@ fun MatchNotFoundDialog(
         text = {
             Text(
                 text = if (isBangla) 
-                    "আপনার নিখোঁজ রিপোর্ট সফলভাবে ডাটাবেজে নথিবদ্ধ করা হয়েছে। আঞ্চলিক স্বেচ্ছাসেবক নেটওয়ার্ক ও পুলিশ বিভাগকে বার্তা পাঠানো হয়েছে। এআই ক্যামেরা ফিডগুলোতে সার্বক্ষণিক টহল স্ক্যানিং অব্যাহত রয়েছে।"
+                    "আপনার নিখোঁজ রিপোর্ট সফলভাবে ডাটাবেজে নথিবদ্ধ করা হয়েছে। আঞ্চলিক স্বেচ্ছাসেবক নেটওয়ার্ককে বার্তা পাঠানো হয়েছে। এআই ক্যামেরা ফিডগুলোতে সার্বক্ষণিক টহল স্ক্যানিং অব্যাহত রয়েছে।"
                     else "Your report was filed successfully and synced to the secure regional databases. AI background scanning is active. Check alerts panel regularly.",
                 style = MaterialTheme.typography.bodyMedium,
                 lineHeight = 20.sp

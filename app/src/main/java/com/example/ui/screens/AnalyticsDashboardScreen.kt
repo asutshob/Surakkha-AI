@@ -183,8 +183,8 @@ fun AnalyticsDashboardScreen(
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = if (isBangla) 
-                            "আমাদের স্বেচ্ছাসেবক নেটওয়ার্কে যোগ দিয়ে নিখোঁজ ব্যক্তি সনাক্তকরণ ও দুর্যোগ মোকাবেলায় সরকারের সহযোগী হোন।"
-                            else "Join our national database. Receive geolocated alerts for missing children or cyclones in your local village.",
+                            "আমাদের স্বেচ্ছাসেবক নেটওয়ার্কে যোগ দিয়ে নিখোঁজ ব্যক্তি সনাক্তকরণ ও দুর্যোগ মোকাবেলায় সক্রিয় ভূমিকা পালন করুন।"
+                            else "Join our community network. Receive geolocated alerts for missing children or cyclones in your local village.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
@@ -204,40 +204,6 @@ fun AnalyticsDashboardScreen(
                             fontWeight = FontWeight.Bold
                         )
                     }
-                }
-            }
-        }
-
-        // Section 4: Scalability & Technical Feasibility Details for SEDP Jury
-        item {
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2F)
-                ),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = if (isBangla) "আইসিটি মন্ত্রণালয় পিআইপি সংযুক্তি (Jury Notes)" else "ICT Ministry API Integration Strategy (Jury Notes)",
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = if (isBangla)
-                            "১. বাংলাদেশ পুলিশ নিখোঁজ সার্ভার (Database integration ready)\n" +
-                            "২. বাংলাদেশ আবহাওয়া অধিদপ্তর (BMD API live integration)\n" +
-                            "৩. শিক্ষা বোর্ড ও ক্যাবিনেট সচিবালয় পরিপত্র ফিড\n" +
-                            "৪. অফলাইন এআই মডিউল (low-end ডিভাইসের জন্য অপ্টিমাইজড)"
-                            else "• Bangladesh National Police DB (Integration channels ready)\n" +
-                            "• Bangladesh Meteorological Dept (BMD XML live parsing)\n" +
-                            "• Education Boards circular databases (Crawling setup)\n" +
-                            "• Offline local fallback models (Tuned for low-end rural nodes)",
-                        style = MaterialTheme.typography.labelSmall,
-                        lineHeight = 16.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
             }
         }
