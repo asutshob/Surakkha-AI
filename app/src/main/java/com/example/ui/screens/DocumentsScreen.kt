@@ -89,6 +89,20 @@ fun DocumentsScreen(
     
     val documentUiState by viewModel.documentUiState.collectAsState()
 
+    val activeDocToShow = activeSavedDoc ?: when (documentUiState) {
+        is UiState.Success -> (documentUiState as UiState.Success<SimplifiedDocument>).data
+        else -> null
+    }
+
+    // Document specific chat states
+    val docChatMessages by viewModel.docChatMessages.collectAsState()
+    val docChatUiState by viewModel.docChatUiState.collectAsState()
+    var docQueryText by remember { mutableStateOf("") }
+
+    LaunchedEffect(activeDocToShow) {
+        viewModel.clearDocChatHistory()
+    }
+
     // Precompiled Government Policy Templates Library
     val presets = remember {
         listOf(
@@ -533,11 +547,6 @@ fun DocumentsScreen(
         }
 
         // Section 3: Loader & Advanced Animated Scanning Card
-        val activeDocToShow = activeSavedDoc ?: when (documentUiState) {
-            is UiState.Success -> (documentUiState as UiState.Success<SimplifiedDocument>).data
-            else -> null
-        }
-
         if (documentUiState is UiState.Loading) {
             item {
                 Card(
@@ -808,6 +817,211 @@ fun DocumentsScreen(
                         color = AmberWarning,
                         isBangla = isBangla
                     )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // --- DOCUMENT CONNECTED DIRECT CHAT ROOM ---
+                    Card(
+                        modifier = Modifier.fillMaxWidth().testTag("doc_chat_card"),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f)),
+                        shape = RoundedCornerShape(16.dp),
+                        border = BorderStroke(1.5.dp, TealAccent.copy(alpha = 0.35f))
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            // Section Header
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .clip(CircleShape)
+                                        .background(TealAccent.copy(alpha = 0.15f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Chat,
+                                        contentDescription = null,
+                                        tint = TealAccent,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = if (isBangla) "এআই-এর সাথে এই বিষয়ে কথা বলুন" else "Talk to AI about this Document",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = TealAccent
+                                    )
+                                    Text(
+                                        text = if (isBangla) "পুরো পিডিএফ স্ক্যান করে নির্দিষ্ট উত্তর প্রদান করা হবে" else "Scans the entire PDF to answer specific queries",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                            
+                            Spacer(modifier = Modifier.height(12.dp))
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            // Chat speech bubbles
+                            if (docChatMessages.isEmpty()) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 16.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.AutoAwesome,
+                                            contentDescription = null,
+                                            tint = TealAccent.copy(alpha = 0.4f),
+                                            modifier = Modifier.size(28.dp)
+                                        )
+                                        Text(
+                                            text = if (isBangla) "জিজ্ঞাসা করুন! যেমন: \"আবেদনের শেষ তারিখ কবে?\"" else "Ask anything! E.g. \"When is the deadline?\"",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
+                                }
+                            } else {
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = 8.dp)
+                                ) {
+                                    docChatMessages.forEach { msg ->
+                                        val isUser = msg.isUser
+                                        Box(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            contentAlignment = if (isUser) Alignment.CenterEnd else Alignment.CenterStart
+                                        ) {
+                                            Surface(
+                                                color = if (isUser) TealAccent else MaterialTheme.colorScheme.surface,
+                                                shape = RoundedCornerShape(
+                                                    topStart = 12.dp,
+                                                    topEnd = 12.dp,
+                                                    bottomStart = if (isUser) 12.dp else 0.dp,
+                                                    bottomEnd = if (isUser) 0.dp else 12.dp
+                                                ),
+                                                border = if (isUser) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                                                modifier = Modifier.widthIn(max = 280.dp),
+                                                shadowElevation = 1.dp
+                                            ) {
+                                                Column(modifier = Modifier.padding(10.dp)) {
+                                                    Text(
+                                                        text = msg.text,
+                                                        color = if (isUser) Color.White else MaterialTheme.colorScheme.onSurface,
+                                                        style = MaterialTheme.typography.bodySmall,
+                                                        lineHeight = 16.sp
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Loading state
+                            if (docChatUiState is UiState.Loading) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp),
+                                    contentAlignment = Alignment.CenterStart
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(MaterialTheme.colorScheme.surface)
+                                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(8.dp))
+                                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                                    ) {
+                                        CircularProgressIndicator(
+                                            color = TealAccent,
+                                            strokeWidth = 2.dp,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                        Text(
+                                            text = if (isBangla) "এআই ডকুমেন্ট স্ক্যান করছে..." else "AI is scanning document...",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = TealAccent,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            // Query Input Box
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                OutlinedTextField(
+                                    value = docQueryText,
+                                    onValueChange = { docQueryText = it },
+                                    placeholder = {
+                                        Text(
+                                            text = if (isBangla) "দলিল ও নীতি সম্পর্কে যেকোনো প্রশ্ন লিখুন..." else "Ask a question about this circular...",
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                    },
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .testTag("doc_chat_input"),
+                                    shape = RoundedCornerShape(12.dp),
+                                    singleLine = true,
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedBorderColor = TealAccent,
+                                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                                    )
+                                )
+
+                                IconButton(
+                                    onClick = {
+                                        if (docQueryText.trim().isNotEmpty()) {
+                                            viewModel.sendDocChatMessage(
+                                                docTitle = activeDocToShow.originalTitle,
+                                                docContent = activeDocToShow.originalText,
+                                                queryText = docQueryText
+                                            )
+                                            docQueryText = ""
+                                        }
+                                    },
+                                    enabled = docQueryText.trim().isNotEmpty() && docChatUiState !is UiState.Loading,
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .clip(CircleShape)
+                                        .background(
+                                            if (docQueryText.trim().isNotEmpty() && docChatUiState !is UiState.Loading) TealAccent else MaterialTheme.colorScheme.surfaceVariant
+                                        )
+                                        .testTag("doc_chat_send_btn")
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Send,
+                                        contentDescription = "Send",
+                                        tint = if (docQueryText.trim().isNotEmpty() && docChatUiState !is UiState.Loading) Color.White else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

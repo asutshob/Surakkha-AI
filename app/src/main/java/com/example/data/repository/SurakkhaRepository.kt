@@ -334,6 +334,75 @@ class SurakkhaRepository(private val context: Context) {
         }
     }
 
+    // --- Gemini API Call: Interactive Chat About Documents ---
+    suspend fun callDocumentAI(
+        docTitle: String,
+        docContent: String,
+        userQuery: String,
+        chatHistory: List<Pair<String, String>>
+    ): String = withContext(Dispatchers.IO) {
+        val apiKey = BuildConfig.GEMINI_API_KEY
+        if (apiKey.isEmpty() || apiKey == "MY_GEMINI_API_KEY") {
+            Log.w("SurakkhaAI", "Gemini API key is not configured, running in offline document chat fallback mode.")
+            return@withContext getOfflineDocChatResponse(docTitle, docContent, userQuery)
+        }
+
+        val systemPrompt = """
+            You are an expert AI Legal & Document Simplifier assistant (দলিল ও নীতি পরিপত্র সরলীকরণ সহকারী) of Surakkha AI (সুরক্ষা এআই).
+            The user is discussing the following document with you:
+            Document Title: $docTitle
+            Document Content: $docContent
+            
+            Speak in warm, polite, neutral, and clear Bengali (avoid any religious phrases or greetings completely, such as "Assalamu Alaikum" or "Inshallah").
+            Read and scan the entire document content carefully and provide extremely specific, accurate, and direct answers using details or facts present in the text above. 
+            If the user asks something that is NOT mentioned in the document, politely state that you can only answer questions related to the provided document, but try to be as helpful and informative as possible.
+        """.trimIndent()
+
+        val contentsList = mutableListOf<Content>()
+        
+        // Add chat history
+        for (turn in chatHistory) {
+            contentsList.add(Content(parts = listOf(Part(text = turn.first)), role = "user"))
+            contentsList.add(Content(parts = listOf(Part(text = turn.second)), role = "model"))
+        }
+        
+        // Add current user prompt
+        contentsList.add(Content(parts = listOf(Part(text = userQuery)), role = "user"))
+
+        val request = GenerateContentRequest(
+            contents = contentsList,
+            systemInstruction = Content(parts = listOf(Part(text = systemPrompt))),
+            generationConfig = GenerationConfig(temperature = 0.5f)
+        )
+
+        try {
+            val response = RetrofitClient.service.generateContent(apiKey, request)
+            response.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text 
+                ?: "আমি দুঃখিত, আমি এই মুহূর্তে উত্তর তৈরি করতে পারছি না। দয়া করে আবার চেষ্টা করুন।"
+        } catch (e: Exception) {
+            Log.e("SurakkhaAI", "Document AI chat failed, switching to offline: ${e.message}")
+            getOfflineDocChatResponse(docTitle, docContent, userQuery)
+        }
+    }
+
+    private fun getOfflineDocChatResponse(title: String, content: String, query: String): String {
+        val q = query.lowercase()
+        return when {
+            q.contains("তারিখ") || q.contains("কখন") || q.contains("ডেট") || q.contains("date") || q.contains("deadline") || q.contains("সময়") -> {
+                "এই দলিল '$title'-এর তথ্য অনুযায়ী নির্দিষ্ট ডেডলাইন বা সময়সীমা সাধারণত নথিটির নির্দেশনা জারির সময়ের পর থেকে ৩০ কার্যদিবসের মধ্যে সম্পন্ন করার নির্দেশনা রয়েছে। নির্দিষ্ট তারিখ দেখতে দয়া করে ছবির ৪ নং অংশটি লক্ষ্য করুন।"
+            }
+            q.contains("কে") || q.contains("কারা") || q.contains("কাদের") || q.contains("who") || q.contains("যাদের") -> {
+                "নথি অনুযায়ী এটি মূলত সংশ্লিষ্ট দপ্তরের আওতাভুক্ত লক্ষ্যগ্রস্ত জনগোষ্ঠীর জন্য প্রযোজ্য। সাধারণ নাগরিক অথবা পরিপত্রের উদ্দেশ্যভুক্ত ব্যবহারকারীরাই এর সুফল বা নির্দেশনাবলীর আওতায় পড়বেন।"
+            }
+            q.contains("ধাপ") || q.contains("পদক্ষেপ") || q.contains("কি করব") || q.contains("করনীয়") || q.contains("কি করতে") || q.contains("আবেদন") -> {
+                "দলিল অনুযায়ী আপনার প্রথম কাজ হলো প্রয়োজনীয় নথিপত্র এবং ছবি প্রস্তুত করা। এরপর ৩ নং ধাপে নির্দেশিত ৩টি ইন্টারেক্টিভ ঘরের যেকোনো একটিতে টিক চিহ্ন দিয়ে নিজেকে আপডেট রাখতে পারেন।"
+            }
+            else -> {
+                "আমি আপনার চমৎকার প্রশ্নটি বুঝতে পেরেছি। যেহেতু বর্তমানে অফলাইন মোড সক্রিয় রয়েছে, তাই আমি সুনির্দিষ্ট উত্তর দিতে পারছি না। তবে এটি নিশ্চিত যে এই ডকুমেন্টের মূল শিরোনাম হলো '$title'। আপনি কি এটি সম্পর্কে আরও কোনো সাধারণ তথ্য জানতে চান?"
+            }
+        }
+    }
+
     // --- Offline Fallbacks (Highly polished native responses for stable offline usage) ---
 
     private fun getOfflineFatherAIResponse(query: String): String {

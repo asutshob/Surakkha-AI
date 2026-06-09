@@ -304,6 +304,44 @@ class SurakkhaViewModel(application: Application) : AndroidViewModel(application
 
     fun clearSimplifiedDocState() {
         _documentUiState.value = UiState.Idle
+        clearDocChatHistory()
+    }
+
+    // Document Interactive Chat State
+    private val _docChatMessages = MutableStateFlow<List<ChatMessage>>(emptyList())
+    val docChatMessages: StateFlow<List<ChatMessage>> = _docChatMessages
+
+    private val _docChatUiState = MutableStateFlow<UiState<Unit>>(UiState.Idle)
+    val docChatUiState: StateFlow<UiState<Unit>> = _docChatUiState
+
+    fun clearDocChatHistory() {
+        _docChatMessages.value = emptyList()
+        _docChatUiState.value = UiState.Idle
+    }
+
+    fun sendDocChatMessage(docTitle: String, docContent: String, queryText: String) {
+        if (queryText.trim().isEmpty()) return
+
+        val userMsg = ChatMessage(text = queryText, isUser = true)
+        val currentMsgs = _docChatMessages.value.toMutableList()
+        currentMsgs.add(userMsg)
+        _docChatMessages.value = currentMsgs
+
+        viewModelScope.launch {
+            _docChatUiState.value = UiState.Loading
+
+            val history = _docChatMessages.value.dropLast(1).map {
+                Pair(if (it.isUser) "user" else "model", it.text)
+            }
+            val replyText = repository.callDocumentAI(docTitle, docContent, queryText, history)
+
+            val modelMsg = ChatMessage(text = replyText, isUser = false)
+            val updatedMsgs = _docChatMessages.value.toMutableList()
+            updatedMsgs.add(modelMsg)
+            _docChatMessages.value = updatedMsgs
+
+            _docChatUiState.value = UiState.Idle
+        }
     }
 
     // --- 4. Father AI Actions ---
